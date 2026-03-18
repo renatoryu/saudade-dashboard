@@ -3,13 +3,35 @@ import confetti from 'canvas-confetti';
 import { Heart, MapPin, Clock } from 'lucide-react';
 
 export default function SaudadeDashboard() {
+  // Pega o parâmetro 'user' da URL e deixa em minúsculo para evitar erros (ex: ?user=Renato ou ?user=renato)
   const params = new URLSearchParams(window.location.search);
-  const user = params.get("user") || "Alguém";
+  const userParam = (params.get("user") || "").toLowerCase();
+
+  // Configuração de quem está enviando e para qual canal enviar
+  const userConfigs = {
+    renato: {
+      senderName: 'Renato',
+      // Este é o canal que a GIH tem que assinar no app do Ntfy no celular DELA
+      targetTopic: 'gih_recebe_msg' 
+    },
+    gih: {
+      senderName: 'Gih',
+      // Este é o canal que VOCÊ tem que assinar no app do Ntfy no SEU celular
+      targetTopic: 'renato_recebe_msg'
+    }
+  };
+
+  // Se a URL não tiver user, ou tiver um nome diferente, usa um padrão
+  const currentUser = userConfigs[userParam] || {
+    senderName: 'Alguém',
+    targetTopic: 'canal_padrao_de_vcs'
+  };
+
   const [timePassed, setTimePassed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [buttonText, setButtonText] = useState("Enviar um Abraço Virtual");
   const [isSending, setIsSending] = useState(false);
 
-  // A data do beijo na estação (Segunda-feira, 16 de Março de 2026 - ajuste a hora)
+  // A data do beijo na estação
   const lastKissDate = new Date('2026-03-16T22:08:00').getTime();
 
   useEffect(() => {
@@ -31,7 +53,6 @@ export default function SaudadeDashboard() {
   const handleVirtualHug = async () => {
     setIsSending(true);
     
-    // Efeito visual bonitinho na tela dela
     confetti({
       particleCount: 100,
       spread: 70,
@@ -40,13 +61,12 @@ export default function SaudadeDashboard() {
     });
 
     try {
-      // Dispara a notificação para o seu celular!
-      // TROQUE 'renato_gih_abraco_secreto' por um nome único seu.
-    await fetch('https://ntfy.sh/renatogih_notificacao_998877', {
-      method: 'POST',
-      body: 'Gih acabou de te mandar um abraço virtual! ❤️',
-      headers: { 'Title': 'Pane no Sistema' }
-    });
+      // Usa a configuração dinâmica baseada em quem está acessando
+      await fetch(`https://ntfy.sh/${currentUser.targetTopic}`, {
+        method: 'POST',
+        body: `${currentUser.senderName} acabou de te mandar um abraço virtual! ❤️`,
+        headers: { 'Title': 'Pane no Sistema' }
+      });
       
       setButtonText("Abraço enviado! ❤️");
       setTimeout(() => setButtonText("Enviar um Abraço Virtual"), 5000);
@@ -63,7 +83,10 @@ export default function SaudadeDashboard() {
       {/* Header Bonitinho */}
       <div className="text-center space-y-2 mb-10">
         <Heart className="w-12 h-12 text-pink-500 mx-auto animate-pulse" />
-        <h1 className="text-2xl font-semibold text-gray-700 tracking-wide">Dashboard da Saudade</h1>
+        {/* Você pode até personalizar o título baseado no usuário, se quiser! */}
+        <h1 className="text-2xl font-semibold text-gray-700 tracking-wide">
+          Dashboard da Saudade
+        </h1>
       </div>
 
       {/* Card Principal */}
@@ -116,7 +139,7 @@ export default function SaudadeDashboard() {
 
       {/* O Easter Egg do Dev */}
       <div className="mt-12 text-center text-xs text-gray-400 font-mono">
-        <p>/* Status: Aguardando o próximo encontro para zerar o contador. */</p>
+        <p>PS: Aguardando o próximo encontro para zerar o contador. </p>
       </div>
 
     </div>
