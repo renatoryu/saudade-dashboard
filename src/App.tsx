@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Heart, MapPin, Clock } from 'lucide-react';
 
 export default function SaudadeDashboard() {
-  // Pega o parâmetro 'user' da URL e deixa em minúsculo para evitar erros (ex: ?user=Renato ou ?user=renato)
   const params = new URLSearchParams(window.location.search);
   const userParam = (params.get("user") || "").toLowerCase();
 
-  // Configuração de quem está enviando e para qual canal enviar
-  const userConfigs = {
+  // 👇 TIPO DAS CHAVES
+  type UserKey = "renato" | "gih";
+
+  const userConfigs: Record<UserKey, { senderName: string; targetTopic: string }> = {
     renato: {
       senderName: 'Renato',
-      // Este é o canal que a GIH tem que assinar no app do Ntfy no celular DELA
-      targetTopic: 'gih_recebe_msg' 
+      targetTopic: 'gih_recebe_msg'
     },
     gih: {
       senderName: 'Gih',
-      // Este é o canal que VOCÊ tem que assinar no app do Ntfy no SEU celular
       targetTopic: 'renato_recebe_msg'
     }
   };
 
-  // Se a URL não tiver user, ou tiver um nome diferente, usa um padrão
-  const currentUser = userConfigs[userParam] || {
-    senderName: 'Alguém',
-    targetTopic: 'canal_padrao_de_vcs'
-  };
+  // 👇 AQUI É A CORREÇÃO
+  const currentUser =
+    userConfigs[userParam as UserKey] || {
+      senderName: 'Alguém',
+      targetTopic: 'canal_padrao_de_vcs'
+    };
 
   const [timePassed, setTimePassed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [buttonText, setButtonText] = useState("Enviar um Abraço Virtual");
