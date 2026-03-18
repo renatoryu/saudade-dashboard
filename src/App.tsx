@@ -65,7 +65,7 @@ export default function SaudadeDashboard() {
       await fetch(`https://ntfy.sh/${currentUser.targetTopic}`, {
         method: 'POST',
         body: `${currentUser.senderName} acabou de te mandar um abraço virtual! ❤️`,
-        headers: { 'Title': 'Pane no Sistema' }
+        headers: { 'Title': 'Sinto sua falta' }
       });
       
       setButtonText("Abraço enviado! ❤️");
